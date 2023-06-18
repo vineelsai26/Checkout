@@ -9,6 +9,7 @@ import (
 )
 
 func CopyDirectory(scrDir, dest string) error {
+	fmt.Println("Copying", scrDir, "to", dest)
 	entries, err := os.ReadDir(scrDir)
 	if err != nil {
 		return err

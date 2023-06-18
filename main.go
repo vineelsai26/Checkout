@@ -19,7 +19,9 @@ func initProject(projectName string) {
 				panic(err)
 			}
 
-			utils.DeleteFolder(projectSourceDir)
+			if err := utils.DeleteFolder(projectSourceDir); err != nil {
+				panic(err)
+			}
 			return
 		}
 	}
@@ -29,15 +31,15 @@ func initProject(projectName string) {
 
 func deInitProject(projectName string, projectFolder string) {
 	projectCheckoutPath := filepath.Join(utils.ProjectCheckoutRootDir, projectName)
-	projectSourceDir := filepath.Join(utils.ProjectSourceDir, projectFolder)
+	projectSourceDir := filepath.Join(utils.ProjectSourceDir, projectFolder, projectName)
 
-	err := utils.CopyDirectory(projectCheckoutPath, projectSourceDir)
-
-	if err != nil {
+	if err := utils.CopyDirectory(projectCheckoutPath, projectSourceDir); err != nil {
 		panic(err)
 	}
 
-	utils.DeleteFolder(projectCheckoutPath)
+	if err := utils.DeleteFolder(projectCheckoutPath); err != nil {
+		panic(err)
+	}
 }
 
 func main() {
