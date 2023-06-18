@@ -8,15 +8,18 @@ import (
 	"vineelsai.com/checkout/utils"
 )
 
-func Init(projectName string) {
-	for _, projectRootDir := range utils.GetProjectSourceDir() {
-		projectDir := filepath.Join(projectRootDir, projectName)
+func initProject(projectName string) {
+	for _, projectSourceRootDir := range utils.GetProjectSourceDir() {
+		projectSourceDir := filepath.Join(projectSourceRootDir, projectName)
+		ProjectCheckoutDir := filepath.Join(utils.ProjectCheckoutRootDir, projectName)
 
-		if utils.Exists(projectDir) {
-			err := utils.CopyDirectory(projectDir, utils.GetProjectDestDir(projectName))
+		if utils.Exists(projectSourceDir) {
+			err := utils.CopyDirectory(projectSourceDir, ProjectCheckoutDir)
 			if err != nil {
 				panic(err)
 			}
+
+			utils.DeleteFolder(projectSourceDir)
 			return
 		}
 	}
@@ -24,8 +27,17 @@ func Init(projectName string) {
 	fmt.Println("Project not found")
 }
 
-func DeInit(projectName string, projectFolder string) {
-	utils.CopyDirectory(utils.ProjectCheckoutDir, filepath.Join(utils.ProjectSourceDir, projectFolder))
+func deInitProject(projectName string, projectFolder string) {
+	projectCheckoutPath := filepath.Join(utils.ProjectCheckoutRootDir, projectName)
+	projectSourceDir := filepath.Join(utils.ProjectSourceDir, projectFolder)
+
+	err := utils.CopyDirectory(projectCheckoutPath, projectSourceDir)
+
+	if err != nil {
+		panic(err)
+	}
+
+	utils.DeleteFolder(projectCheckoutPath)
 }
 
 func main() {
@@ -39,12 +51,12 @@ func main() {
 
 	switch args[0] {
 	case "init":
-		Init(args[1])
+		initProject(args[1])
 	case "deinit":
 		if len(args) == 2 {
-			DeInit(args[1], utils.DefaultProjectSource)
+			deInitProject(args[1], utils.DefaultProjectSource)
 		} else {
-			DeInit(args[1], args[2])
+			deInitProject(args[1], args[2])
 		}
 	}
 }

@@ -14,10 +14,6 @@ func GetHome() string {
 	return home
 }
 
-func GetProjectDestDir(projectDir string) string {
-	return filepath.Join(ProjectCheckoutDir, projectDir)
-}
-
 func GetProjectSourceDir() []string {
 
 	var projectDirs []string
