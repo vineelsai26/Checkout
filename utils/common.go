@@ -14,21 +14,41 @@ func GetHome() string {
 	return home
 }
 
+func GetProjectSourceRootDir() string {
+	var projectSourceDir string
+
+	if Exists(ConfigFilePath) {
+		var file, err = os.ReadFile(ConfigFilePath)
+		if err != nil {
+			panic(err)
+		}
+
+		projectSourceDir = string(file)
+	} else {
+		projectSourceDir = DefaultProjectSourceDir
+	}
+
+	return projectSourceDir
+}
+
 func GetProjectSourceDir() []string {
+	var projectSourceDir []string
 
-	var projectDirs []string
+	projectSourceRootDir := GetProjectSourceRootDir()
 
-	dirList, err := os.ReadDir(ProjectSourceDir)
+	projectSourceDir = append(projectSourceDir, projectSourceRootDir)
+
+	dirList, err := os.ReadDir(projectSourceRootDir)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, dir := range dirList {
 		if dir.IsDir() {
-			projectDirs = append(projectDirs, filepath.Join(ProjectSourceDir, dir.Name()))
+			projectSourceDir = append(projectSourceDir, filepath.Join(projectSourceRootDir, dir.Name()))
 		}
 	}
-	return projectDirs
+	return projectSourceDir
 }
 
 func Exists(filePath string) bool {
