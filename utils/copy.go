@@ -5,10 +5,16 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
 func CopyDirectory(scrDir, dest string) error {
+
+	if strings.Contains(scrDir, "node_modules") {
+		return nil
+	}
+
 	fmt.Println("Copying", scrDir, "to", dest)
 	entries, err := os.ReadDir(scrDir)
 	if err != nil {
