@@ -19,7 +19,15 @@ func main() {
 	switch args[0] {
 	case "init":
 		if len(args) == 1 {
-			args = append(args, project.PromptForName())
+			projectDir := project.PromptForName()
+			if utils.Exists(projectDir) {
+				fmt.Println("Found Project at:", projectDir)
+				fmt.Println("Checking Out Project...")
+				project.Init(projectDir)
+			} else {
+				fmt.Println("Project not found")
+			}
+			return
 		}
 		for _, projectSourceRootDir := range utils.GetProjectSourceDir() {
 			if utils.Exists(projectSourceRootDir) {
@@ -28,7 +36,11 @@ func main() {
 					fmt.Println("Found Project at:", projectDir)
 					fmt.Println("Checking Out Project...")
 					project.Init(projectDir)
+				} else {
+					fmt.Println("Project not found")
 				}
+			} else {
+				fmt.Println("Project source directory not found")
 			}
 		}
 
