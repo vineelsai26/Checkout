@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"vineelsai.com/checkout/utils"
+	"vineelsai.com/checkout/src/utils"
 )
 
 func getProjectsList() []string {

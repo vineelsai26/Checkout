@@ -1,12 +1,14 @@
-package utils
+package tests
 
 import (
 	"os/exec"
 	"testing"
+
+	"vineelsai.com/checkout/src/utils"
 )
 
 func TestCopyDir(t *testing.T) {
-	err := CopyDirectory("testdir", "testdir1")
+	err := utils.CopyDirectory("testdir", "testdir1")
 	if err != nil {
 		t.Errorf("error copying directory: %s", err)
 	}
@@ -24,7 +26,7 @@ func TestCopyDir(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	err := Copy("testfile", "testfile1")
+	err := utils.Copy("testfile", "testfile1")
 	if err != nil {
 		t.Errorf("error copying directory: %s", err)
 	}

@@ -14,7 +14,7 @@ rand_str () {
     # -dc: delete complementary set == delete all except given set
 }
 
-cd utils
+cd tests
 mkdir -p testdir
 cd testdir
 

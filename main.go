@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"vineelsai.com/checkout/project"
-	"vineelsai.com/checkout/utils"
+	"vineelsai.com/checkout/src/project"
+	"vineelsai.com/checkout/src/utils"
 )
 
 func main() {

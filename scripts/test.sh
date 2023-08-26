@@ -1,3 +1,3 @@
 sh scripts/create_test_data.sh
 go test -v ./...
-sh scripts/clean_test_data.sh
+sh scripts/clean.sh

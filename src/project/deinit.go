@@ -3,7 +3,7 @@ package project
 import (
 	"path/filepath"
 
-	"vineelsai.com/checkout/utils"
+	"vineelsai.com/checkout/src/utils"
 )
 
 func DeInit(projectName string, projectFolder string) {
