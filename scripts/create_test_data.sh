@@ -6,12 +6,10 @@ rand_str () {
     # Usage: VALUE=$(rand_str $LENGTH)
     #    or: VALUE=$(rand_str)
 
-    local DEFAULT_LENGTH=64
-    local LENGTH=${1:-$DEFAULT_LENGTH}
+    DEFAULT_LENGTH=64
+    LENGTH=${1:-$DEFAULT_LENGTH}
 
-    LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c $LENGTH
-    # LC_ALL=C: required for Mac OS X - https://unix.stackexchange.com/a/363194/403075
-    # -dc: delete complementary set == delete all except given set
+    openssl rand -hex $LENGTH | cut -c1-$LENGTH
 }
 
 cd tests
