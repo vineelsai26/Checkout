@@ -6,46 +6,18 @@ import (
 	"path/filepath"
 )
 
-func GetHome() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-	return home
-}
-
-func GetProjectSourceRootDir() string {
-	var projectSourceDir string
-
-	if Exists(ConfigFilePath) {
-		var file, err = os.ReadFile(ConfigFilePath)
-		if err != nil {
-			panic(err)
-		}
-
-		projectSourceDir = string(file)
-	} else {
-		projectSourceDir = DefaultProjectSourceDir
-	}
-
-	return projectSourceDir
-}
-
 func GetProjectSourceDir() []string {
-	var projectSourceDir []string
+	projectSourceDir := make([]string, 0)
+	projectSourceDir = append(projectSourceDir, ProjectSourceDir)
 
-	projectSourceRootDir := GetProjectSourceRootDir()
-
-	projectSourceDir = append(projectSourceDir, projectSourceRootDir)
-
-	dirList, err := os.ReadDir(projectSourceRootDir)
+	dirList, err := os.ReadDir(ProjectSourceDir)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, dir := range dirList {
 		if dir.IsDir() {
-			projectSourceDir = append(projectSourceDir, filepath.Join(projectSourceRootDir, dir.Name()))
+			projectSourceDir = append(projectSourceDir, filepath.Join(ProjectSourceDir, dir.Name()))
 		}
 	}
 	return projectSourceDir
