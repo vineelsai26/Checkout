@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rand_str () {
+rand_str() {
     # Return random alpha-numeric string of given LENGTH
     #
     # Usage: VALUE=$(rand_str $LENGTH)
@@ -16,26 +16,28 @@ cd tests
 mkdir -p testdir
 cd testdir
 
-for i in {1..10000} ; do
-    date
+i=0
+iend=1000
+
+while [ $i -le $iend ]; do
     echo "Creating dir$i"
-    date
     mkdir -p dir$i
-    date
     cd dir$i
-    date
-    for j in {1..1000} ; do
-        date
+
+    j=0
+    jend=1000
+    while [ $j -le $jend ]; do
+        echo "Creating file$j in dir$i"
         touch file$j
-        echo `rand_str 100000` > file$j
-        date
+        echo $(rand_str 10000) >file$j
+        j=$(($j + 1))
     done
     cd ..
-    date
+    i=$(($i + 1))
 done
 
 ls -laR
 cd ..
 
 touch testfile
-echo `rand_str 1000000` > testfile
+echo $(rand_str 1000000) >testfile
