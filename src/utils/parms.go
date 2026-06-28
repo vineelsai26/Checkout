@@ -3,6 +3,7 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var DefaultProjectSource = "vineelsai26"
@@ -22,18 +23,26 @@ var ConfigFilePath = filepath.Join(HOME, ".checkout", "source_dir")
 var ProjectSourceDir = func() string {
 	var projectSourceDir string
 
-	if Exists(ConfigFilePath) {
+	if envSourceDir := os.Getenv("CHECKOUT_SOURCE_DIR"); envSourceDir != "" {
+		projectSourceDir = envSourceDir
+	} else if Exists(ConfigFilePath) {
 		var file, err = os.ReadFile(ConfigFilePath)
 		if err != nil {
 			panic(err)
 		}
 
-		projectSourceDir = string(file)
+		projectSourceDir = strings.TrimSpace(string(file))
 	} else {
 		projectSourceDir = DefaultProjectSourceDir
 	}
 
-	return projectSourceDir
+	return filepath.Clean(projectSourceDir)
 }()
 
-var ProjectCheckoutRootDir = filepath.Join(HOME, "Personal")
+var ProjectCheckoutRootDir = func() string {
+	if checkoutRoot := os.Getenv("CHECKOUT_ROOT"); checkoutRoot != "" {
+		return filepath.Clean(checkoutRoot)
+	}
+
+	return filepath.Join(HOME, "Personal")
+}()

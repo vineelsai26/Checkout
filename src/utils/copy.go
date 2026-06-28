@@ -9,70 +9,161 @@ import (
 	"syscall"
 )
 
-func CopyDirectory(scrDir, dest string) error {
+type CopyOptions struct {
+	IncludeEnv bool
+	DryRun     bool
+	Excludes   []string
+}
 
-	if strings.Contains(scrDir, "node_modules") {
+var DefaultExcludedNames = []string{
+	"node_modules",
+	"bower_components",
+	".next",
+	".nuxt",
+	".svelte-kit",
+	"dist",
+	"build",
+	"out",
+	"coverage",
+	".turbo",
+	".cache",
+	".parcel-cache",
+	".vite",
+	".venv",
+	"venv",
+	"env",
+	"__pycache__",
+	".pytest_cache",
+	".mypy_cache",
+	".ruff_cache",
+	".tox",
+	".nox",
+	"target",
+}
+
+func (options CopyOptions) ShouldSkip(path string) bool {
+	name := filepath.Base(path)
+	if isEnvFile(name) && !options.IncludeEnv {
+		return true
+	}
+
+	for _, exclude := range append(DefaultExcludedNames, options.Excludes...) {
+		exclude = strings.TrimSpace(exclude)
+		if exclude == "" {
+			continue
+		}
+		if name == exclude || pathMatchesPattern(path, exclude) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isEnvFile(name string) bool {
+	if name == ".env.example" || name == ".env.template" || name == ".env.sample" {
+		return false
+	}
+	return name == ".env" || strings.HasPrefix(name, ".env.")
+}
+
+func pathMatchesPattern(path string, pattern string) bool {
+	if !strings.ContainsAny(pattern, "*?[") {
+		return false
+	}
+
+	name := filepath.Base(path)
+	if matched, err := filepath.Match(pattern, name); err == nil && matched {
+		return true
+	}
+	if matched, err := filepath.Match(pattern, path); err == nil && matched {
+		return true
+	}
+
+	return false
+}
+
+func CopyDirectory(sourceDir, dest string) error {
+	return CopyDirectoryWithOptions(sourceDir, dest, CopyOptions{})
+}
+
+func CopyDirectoryWithOptions(sourceDir, dest string, options CopyOptions) error {
+	if options.ShouldSkip(sourceDir) {
+		fmt.Println("Skipping", sourceDir)
 		return nil
 	}
 
-	fmt.Println("Copying", scrDir, "to", dest)
-	entries, err := os.ReadDir(scrDir)
+	fmt.Println("Copying", sourceDir, "to", dest)
+	entries, err := os.ReadDir(sourceDir)
 	if err != nil {
 		return err
 	}
 
-	if err := CreateIfNotExists(dest, 0755); err != nil {
-		return err
+	if !options.DryRun {
+		if err := CreateIfNotExists(dest, 0755); err != nil {
+			return err
+		}
 	}
 
 	for _, entry := range entries {
-		sourcePath := filepath.Join(scrDir, entry.Name())
+		sourcePath := filepath.Join(sourceDir, entry.Name())
 		destPath := filepath.Join(dest, entry.Name())
 
-		fileInfo, err := os.Stat(sourcePath)
-		if err != nil {
+		if options.ShouldSkip(sourcePath) {
+			fmt.Println("Skipping", sourcePath)
+			continue
+		}
+
+		if err := copyEntry(sourcePath, destPath, options); err != nil {
 			return err
-		}
-
-		stat, ok := fileInfo.Sys().(*syscall.Stat_t)
-		if !ok {
-			return fmt.Errorf("failed to get raw syscall.Stat_t data for '%s'", sourcePath)
-		}
-
-		switch fileInfo.Mode() & os.ModeType {
-		case os.ModeDir:
-			if err := CreateIfNotExists(destPath, 0755); err != nil {
-				return err
-			}
-			if err := CopyDirectory(sourcePath, destPath); err != nil {
-				return err
-			}
-		case os.ModeSymlink:
-			if err := CopySymLink(sourcePath, destPath); err != nil {
-				return err
-			}
-		default:
-			if err := Copy(sourcePath, destPath); err != nil {
-				return err
-			}
-		}
-
-		if err := os.Lchown(destPath, int(stat.Uid), int(stat.Gid)); err != nil {
-			return err
-		}
-
-		fInfo, err := entry.Info()
-		if err != nil {
-			return err
-		}
-
-		isSymlink := fInfo.Mode()&os.ModeSymlink != 0
-		if !isSymlink {
-			if err := os.Chmod(destPath, fInfo.Mode()); err != nil {
-				return err
-			}
 		}
 	}
+	return nil
+}
+
+func copyEntry(sourcePath, destPath string, options CopyOptions) error {
+	fileInfo, err := os.Lstat(sourcePath)
+	if err != nil {
+		return err
+	}
+
+	if options.DryRun {
+		fmt.Println("Would copy", sourcePath, "to", destPath)
+		return nil
+	}
+
+	stat, ok := fileInfo.Sys().(*syscall.Stat_t)
+	if !ok {
+		return fmt.Errorf("failed to get raw syscall.Stat_t data for '%s'", sourcePath)
+	}
+
+	switch fileInfo.Mode() & os.ModeType {
+	case os.ModeDir:
+		if err := CreateIfNotExists(destPath, 0755); err != nil {
+			return err
+		}
+		if err := CopyDirectoryWithOptions(sourcePath, destPath, options); err != nil {
+			return err
+		}
+	case os.ModeSymlink:
+		if err := CopySymLink(sourcePath, destPath); err != nil {
+			return err
+		}
+	default:
+		if err := Copy(sourcePath, destPath); err != nil {
+			return err
+		}
+	}
+
+	if err := os.Lchown(destPath, int(stat.Uid), int(stat.Gid)); err != nil {
+		return err
+	}
+
+	isSymlink := fileInfo.Mode()&os.ModeSymlink != 0
+	if !isSymlink {
+		return os.Chmod(destPath, fileInfo.Mode())
+	}
+
 	return nil
 }
 

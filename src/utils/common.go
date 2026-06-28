@@ -6,13 +6,17 @@ import (
 	"path/filepath"
 )
 
-func GetProjectSourceDir() []string {
+func GetProjectSourceDir() ([]string, error) {
 	projectSourceDir := make([]string, 0)
 	projectSourceDir = append(projectSourceDir, ProjectSourceDir)
 
+	if !Exists(ProjectSourceDir) {
+		return nil, fmt.Errorf("project source directory not found: %s", ProjectSourceDir)
+	}
+
 	dirList, err := os.ReadDir(ProjectSourceDir)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for _, dir := range dirList {
@@ -20,7 +24,7 @@ func GetProjectSourceDir() []string {
 			projectSourceDir = append(projectSourceDir, filepath.Join(ProjectSourceDir, dir.Name()))
 		}
 	}
-	return projectSourceDir
+	return projectSourceDir, nil
 }
 
 func Exists(filePath string) bool {
