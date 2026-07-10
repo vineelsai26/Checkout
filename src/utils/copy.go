@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 type CopyOptions struct {
@@ -132,11 +131,6 @@ func copyEntry(sourcePath, destPath string, options CopyOptions) error {
 		return nil
 	}
 
-	stat, ok := fileInfo.Sys().(*syscall.Stat_t)
-	if !ok {
-		return fmt.Errorf("failed to get raw syscall.Stat_t data for '%s'", sourcePath)
-	}
-
 	switch fileInfo.Mode() & os.ModeType {
 	case os.ModeDir:
 		if err := CreateIfNotExists(destPath, 0755); err != nil {
@@ -155,7 +149,7 @@ func copyEntry(sourcePath, destPath string, options CopyOptions) error {
 		}
 	}
 
-	if err := os.Lchown(destPath, int(stat.Uid), int(stat.Gid)); err != nil {
+	if err := preserveOwnership(sourcePath, destPath, fileInfo); err != nil {
 		return err
 	}
 

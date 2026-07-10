@@ -39,8 +39,6 @@ func run(args []string) error {
 		printUsage()
 		return fmt.Errorf("unknown command %q", args[0])
 	}
-
-	return nil
 }
 
 func runInit(args []string) error {
