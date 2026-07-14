@@ -99,7 +99,7 @@ func Init(projectDir string, options Options) error {
 		return err
 	}
 
-	if err := utils.DeleteFolderWithOptions(projectDir, options.Copy.DryRun); err != nil {
+	if err := utils.DeleteCopiedTree(projectDir, options.Copy); err != nil {
 		return err
 	}
 

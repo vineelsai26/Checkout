@@ -36,6 +36,11 @@ such as `.env.example`, `.env.template`, and `.env.sample` are still copied.
 Use `--include-env` when the environment files are intentionally part of the
 move.
 
+After a successful copy, Checkout deletes only source entries that were copied.
+Excluded `.env` files and local cache directories remain in the original source
+tree, so an ordinary move cannot silently discard omitted local state. Copy or
+cleanup errors abort the operation and leave a resumable source tree.
+
 The default source root comes from `CHECKOUT_SOURCE_DIR`, then
 `~/.checkout/source_dir`, then `/Users/vineel/Dropbox/GitHub`. The default
 checkout root comes from `CHECKOUT_ROOT`, then `~/Personal`. Both can be

@@ -166,22 +166,23 @@ func Copy(srcFile, dstFile string) error {
 	if err != nil {
 		return err
 	}
-
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 
 	out, err := os.Create(dstFile)
 	if err != nil {
 		return err
 	}
 
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	if err != nil {
+	if _, err := io.Copy(out, in); err != nil {
+		_ = out.Close()
 		return err
 	}
 
-	return nil
+	if err := out.Sync(); err != nil {
+		_ = out.Close()
+		return err
+	}
+	return out.Close()
 }
 
 func CopySymLink(source, dest string) error {

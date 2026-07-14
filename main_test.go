@@ -50,3 +50,20 @@ func TestRunInitDryRunUsesConfiguredRoots(t *testing.T) {
 		t.Fatalf("dry-run created checkout project")
 	}
 }
+
+func TestRunDeinitRejectsTraversal(t *testing.T) {
+	originalSourceDir := utils.ProjectSourceDir
+	originalCheckoutRoot := utils.ProjectCheckoutRootDir
+	t.Cleanup(func() {
+		utils.ProjectSourceDir = originalSourceDir
+		utils.ProjectCheckoutRootDir = originalCheckoutRoot
+	})
+
+	root := t.TempDir()
+	utils.ProjectSourceDir = filepath.Join(root, "source")
+	utils.ProjectCheckoutRootDir = filepath.Join(root, "checkout")
+
+	if err := run([]string{"deinit", "--source-folder", "../../outside", "sample-project"}); err == nil {
+		t.Fatal("expected traversal error")
+	}
+}
